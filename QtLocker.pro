@@ -10,6 +10,7 @@ SOURCES += \
     cassetti.cpp \
     datasource.cpp \
     main.cpp \
+    pos.cpp \
     prenotazioni.cpp \
     sendemail.cpp \
     settings.cpp \
@@ -48,6 +49,7 @@ DISTFILES +=
 HEADERS += \
     cassetti.h \
     datasource.h \
+    pos.h \
     prenotazioni.h \
     sendemail.h \
     settings.h \

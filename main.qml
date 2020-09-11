@@ -16,6 +16,7 @@ Window {
 
     property alias edtCodicePrenotazione: edtCodicePrenotazione
 
+    property var currentPrenotazione
 
     FontLoader { id: proximaNovaBold; source: "fonts/ProximaNova-Bold.otf" }
     FontLoader { id: proximaNovaRegular; source: "fonts/ProximaNova-Regular.otf" }
@@ -437,16 +438,16 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter
                     selectByMouse: false
 
-                    onFocusChanged: function(){
+                    /* onFocusChanged: function(){
                         console.log("onFocusChanged")
                         text=""
                         pnlKeyboard.visible = focus
-                    }
-                    onActiveFocusChanged: {
+                    } */
+                    /* onActiveFocusChanged: {
 
                         console.log("onActFocusChgd: "+focus);
                         pnlKeyboard.visible = focus
-                    }
+                    } */
                     onActiveFocusOnPressChanged: {
                         // gridKeyboard
                         console.log("onActFocusOnPressChgd: "+focus);
@@ -454,6 +455,13 @@ Window {
 
 
                 }
+
+                MouseArea {
+                    id: mouseAreaEdit
+                    anchors.fill: parent
+                    onClicked: pnlKeyboard.visible = true
+                }
+
 
 
             }
@@ -463,14 +471,16 @@ Window {
 
             Text {
                 id: txtMsg
-                height: 31
+                height: 44
                 color: "#ff0404"
                 text: qsTr("Msg")
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: pnlEditCodice.bottom
-                font.pixelSize: 25
+                font.pixelSize: 30
                 horizontalAlignment: Text.AlignHCenter
+                font.bold: true
+                minimumPixelSize: 30
                 anchors.topMargin: 18
                 anchors.rightMargin: 100
                 anchors.leftMargin: 100
@@ -544,7 +554,7 @@ Window {
                 color: "#ffaaaa"
                 radius: 10
                 anchors.top: pnlEditCodice.bottom
-                anchors.topMargin: 20
+                anchors.topMargin: 60
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 Grid {
@@ -626,8 +636,11 @@ Window {
                         textColor: "#ff0404"
                         keyName: "CANC"
                         onPressedChanged: function(){
+                            if (pressedButtons){
                             // showHome()
-                            edtCodicePrenotazione.text = edtCodicePrenotazione.text.substring( 0, edtCodicePrenotazione.text.length)
+                            // edtCodicePrenotazione.text = edtCodicePrenotazione.text.substring( 0, edtCodicePrenotazione.text.length)
+                            edtCodicePrenotazione.text = edtCodicePrenotazione.text.slice( 0, -1)
+                            }
                         }
                     }
 
@@ -643,29 +656,48 @@ Window {
                         keyName: "OK"
                         mouse.onClicked: function(){
 
-                            // if (!pressed) return;
-
                             console.log("OK - "+edtCodicePrenotazione.text)
                             if (edtCodicePrenotazione){
                                 pnlKeyboard.visible = false
 
-                                var r = ds.checkCode( TipoPrenotazione.TIPO_RITIRO, edtCodicePrenotazione.text)
-                                console.log("ret: "+r)
-                                if (r===null)
+                                currentPrenotazione = ds.checkCode( TipoPrenotazione.TIPO_RITIRO, edtCodicePrenotazione.text)
+                                console.log("ret: "+currentPrenotazione)
+                                if (currentPrenotazione===null)
                                     txtMsg.text = "Prenotazione non trovata"
                                 else {
-                                    console.log("Trovata!", r)
                                     txtMsg.text = "Prenotazione trovata !"
-                                    console.log(r.id)
-                                    console.log(r.cassetto)
+
+                                    console.log("id: "+currentPrenotazione.id)
+                                    console.log("cass: "+currentPrenotazione.cassetto)
+                                    console.log("imp: "+currentPrenotazione.importo)
+                                    console.log("depo: "+currentPrenotazione.isDepositata)
+                                    console.log("rit: "+currentPrenotazione.isRitirata)
+
+                                    if (!currentPrenotazione.isDepositata){
+                                        txtMsg.text = "Prenotazione non depositata"
+                                        return
+                                    }
+
+                                    if (currentPrenotazione.isRitirata){
+                                        txtMsg.text = "Prenotazione già ritirata"
+                                        return
+                                    }
 
                                     pnlRitiro.visible = false
 
-                                    testo1.text = "Prelevare dal cassetto n. XX"
-                                    testo2.text = "Prelevare dal cassetto n. XX"
-                                    testo3.text = "Alla fine per cortesia chiudere il cassetto"
-                                    pnlRitiroCassetto.visible = true
-                                    timerRitiroCassetto.running = 1
+                                    if (currentPrenotazione.importo){
+                                        txtValorePos.text = "E' richiesto il pagamento di € " + currentPrenotazione.importo.toFixed(2)
+                                        pnlPagamento.visible = true
+                                    }
+                                    else {
+                                        testo1.text = "Prelevare dal cassetto n. " + currentPrenotazione.cassetto
+                                        testo2.text = "Prelevare dal cassetto n. " + currentPrenotazione.cassetto
+                                        testo3.text = "Dopo il ritiro per cortesia chiudere il cassetto"
+                                        pnlRitiroCassetto.visible = true
+                                        timerRitiroCassetto.running = 1
+
+                                        ioBoard.apriCassetto(currentPrenotazione.cassetto)
+                                    }
                                 }
                             }
                         }
@@ -696,8 +728,8 @@ Window {
 
     Prenotazione {
         id: prenotazioneCheck
-        onCassettoChanged: (x) => console.log("! cassChanged ", x)
-        onImportoChanged: (x) => console.log("! importoChanged ", x)
+        // onCassettoChanged: function(x) { console.log("! cassChanged ", x)}
+        // onImportoChanged: function(x) { console.log("! importoChanged ", x)}
     }
 
     Rectangle {
@@ -710,52 +742,110 @@ Window {
         anchors.bottom: parent.bottom
 
 
+        Timer {
+            property var fase: 0
+            id: timerSimul
+            running: false
+            interval: 3000
+            repeat: true
+            onTriggered: {
+                console.log("!timer "+fase)
+                switch(fase){
+                case 0:
+                    txtMsgPos.text = "Attendere la fine operazione .."
+                    fase = 1;
+                    break;
+                case 1:
+                    txtMsgPos.text = "PAGATO CORRETTAMENTE - TODO"
+                    fase = 2;
+                    break;
+                case 2:
+                    pnlPagamento.visible = false
+                    testo1.text = "Ritirare dal cassetto "+currentPrenotazione.cassetto
+                    testo2.text = "Prego .."
+                    pnlRitiroCassetto.visible = true
+                    // fallback
+                default:
+                    fase = 0
+                    timerSimul.running = false
+                    console.log("Fine timer simul")
+                }
+            }
+        }
+
         Rectangle {
             id: pnlPagamentoInterno
-            width: 470
+            width: 600
             visible: true
             color: "#00000000"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
+            anchors.topMargin: 40
             Text {
                 id: txtValorePos
                 height: 69
                 visible: true
                 color: "#f1ed02"
-                text: qsTr("C'è da pagare")
+                text: qsTr("Importo da pagare")
                 anchors.left: parent.left
                 anchors.right: parent.right
-                font.pixelSize: 24
+                font.pixelSize: 31
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+                font.bold: true
                 font.family: "Proxima Nova Rg"
                 anchors.leftMargin: 0
                 fontSizeMode: Text.VerticalFit
             }
 
+            Text {
+                id: txtMsgPos
+                color: "#fed513"
+                text: qsTr("MsgPos")
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: txtValorePos.bottom
+                font.pixelSize: 20
+                horizontalAlignment: Text.AlignHCenter
+                anchors.topMargin: 20
+                font.bold: true
+                anchors.rightMargin: 0
+                anchors.leftMargin: 0
+            }
+
             BtnLocker {
                 id: btnPagaConPos
-                width: 432
-                height: 190
-                anchors.top: txtValorePos.bottom
+                width: 454
+                height: 288
+                anchors.top: txtMsgPos.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 textMain: "Paga con POS"
                 textSec: "Clicca per pagare con il POS"
-                anchors.topMargin: 25
+                anchors.topMargin: 50
+                onClick: {
+                    console.log("Paga POS - TODO")
+                    timerSimul.running = true
+                }
             }
 
             BtnLocker {
                 id: btnPagaRitorna
-                width: 470
+                y: 527
+                width: 720
                 height: 73
-                anchors.top: btnPagaConPos.bottom
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 50
                 anchors.horizontalCenter: parent.horizontalCenter
-                textMain: "RITORNA ALLA PAGINA"
-                anchors.topMargin: 137
+                textMain: "RITORNA ALLA PAGINA INIZIALE"
                 textSec: ""
                 onClick: showHome()
             }
+
             anchors.horizontalCenter: parent.horizontalCenter
+
+            onVisibleChanged: {
+                if (visible) txtMsgPos.text = ""
+            }
         }
     }
 
@@ -770,6 +860,10 @@ Window {
         anchors.top: pnlHeader.bottom
         anchors.bottom: parent.bottom
 
+        onVisibleChanged: {
+            if (visible) timerRitiroCassetto.running = 1
+        }
+
         Timer {
             id: timerRitiroCassetto
             interval: 6000;
@@ -782,12 +876,13 @@ Window {
             id: testo1
             y: 138
             height: 58
-            color: "#f7f7f7"
+            color: "#fed513"
             text: qsTr("Text")
             anchors.left: parent.left
             anchors.right: parent.right
             font.pixelSize: 50
             horizontalAlignment: Text.AlignHCenter
+            font.bold: true
             font.family: "Proxima Nova Rg"
             anchors.rightMargin: 0
             anchors.leftMargin: 0
@@ -796,14 +891,15 @@ Window {
 
         Text {
             id: testo2
-            y: 222
+            y: 231
             height: 54
-            color: "#f7f7f7"
+            color: "#fed513"
             text: qsTr("Text2")
             anchors.left: parent.left
             anchors.right: parent.right
             font.pixelSize: 30
             horizontalAlignment: Text.AlignHCenter
+            font.family: "Proxima Nova Rg"
             anchors.rightMargin: 0
             anchors.leftMargin: 0
         }
@@ -811,12 +907,15 @@ Window {
         Text {
             id: testo3
             y: 329
+            height: 37
             color: "#f7f7f7"
             text: qsTr("Text3")
             anchors.left: parent.left
             anchors.right: parent.right
             font.pixelSize: 25
             horizontalAlignment: Text.AlignHCenter
+            font.bold: true
+            font.family: "Proxima Nova Rg"
             anchors.rightMargin: 0
             anchors.leftMargin: 0
             fontSizeMode: Text.Fit
@@ -830,11 +929,8 @@ Window {
 
 
 
-
-
-
 /*##^##
 Designer {
-    D{i:11}D{i:44}
+    D{i:38}
 }
 ##^##*/

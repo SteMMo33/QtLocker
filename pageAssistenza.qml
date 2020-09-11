@@ -79,9 +79,11 @@ Window {
         keyName: "Apri motore a vite"
         onPressedChanged: {
             console.log("> ", mysettings)
-            console.log(typeof mysettings)
             for(var el in mysettings)
-                console.log(el)
+                console.log(": "+el)
+            console.log("# "+mysettings.get("flag_esiste_pos"))
+            console.log("# "+mysettings.get("posType"))
+            console.log("# "+mysettings.get("posPort"))
         }
     }
 
@@ -99,7 +101,7 @@ Window {
         id: listView
         x: 446
         y: 381
-        width: 309
+        width: 405
         height: 160
         model: mysettings/* ListModel {
             ListElement {
