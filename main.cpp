@@ -5,7 +5,7 @@
 
 #include "ioboard.h"
 #include "datasource.h"
-
+#include "printer.h"
 
 
 
@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
 
 
     // Preparazione ambiente
+
+    Printer printer;
 
     DataSource dataSource;
     Prenotazioni* prenotazioni = dataSource.getPrenotazioni();

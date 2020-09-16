@@ -100,6 +100,7 @@ void IoBoard::onDisconnected()
 
 /**
  * @brief IoBoard::onTextMessageReceived
+ * Gestore delle risposte tipo TESTO dalla scheda IO
  * @param message
  */
 void IoBoard::onTextMessageReceived(QString message)
@@ -111,6 +112,7 @@ void IoBoard::onTextMessageReceived(QString message)
 
 /**
  * @brief IoBoard::onBinMessageReceived
+ * Gestore delle risposte tipo BINARIO dalla scheda IO
  * @param message
  */
 void IoBoard::onBinMessageReceived(QByteArray message)
@@ -217,7 +219,7 @@ int IoBoard::leggiCassetto(int nCassetto)
     qDebug() << "[IoBoard] leggiCassetto:" << nCassetto;
 
     if (_type==CONNECTION_WS){
-        qDebug() << "ToDo WS";
+        _ws.sendTextMessage(QString("{\"LeggiCassetto\":%1}").arg(nCassetto));
     }
     else {
         unsigned char cmd[] = { 0x3C, 0x01, 0xFF, 0xFF };

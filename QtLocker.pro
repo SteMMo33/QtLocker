@@ -1,4 +1,4 @@
-QT += quick sql websockets serialport
+QT += quick sql websockets serialport printsupport
 
 CONFIG += c++11
 
@@ -12,6 +12,7 @@ SOURCES += \
     main.cpp \
     pos.cpp \
     prenotazioni.cpp \
+    printer.cpp \
     sendemail.cpp \
     settings.cpp \
     ioboard.cpp \
@@ -51,6 +52,7 @@ HEADERS += \
     datasource.h \
     pos.h \
     prenotazioni.h \
+    printer.h \
     sendemail.h \
     settings.h \
     ioboard.h \
