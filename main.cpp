@@ -15,6 +15,11 @@
  * @param argv
  * Punto d'ingresso dell'applicazione
  * @return
+ *
+ * Questa versione del programma presuppone la presenza del
+ * servizio ws-server in background. La comunicazione
+ * avviene tramite websocket.
+ *
  */
 int main(int argc, char *argv[])
 {
@@ -43,13 +48,13 @@ int main(int argc, char *argv[])
     Cassetti* cassetti = dataSource.getCassetti();
 
     // Accesso 'settings'
-    qDebug() << "Farmacia: " << settings->value("farmacia").toString();
-    qDebug() << "Cassetti: " << settings->value("numColumn");
-    qDebug() << "email: " << settings->value("emailFarmacia").toString();
-    qDebug() << "serial: " << settings->value("serial_port").toString();
+    qDebug() << "Farmacia: " << settings->get("farmacia");
+    qDebug() << "Cassetti: " << settings->get("numColumn");
+    qDebug() << "email: " << settings->get("emailFarmacia");
+    qDebug() << "serial: " << settings->get("serial_port");
 
     IoBoard ioboard;
-    ioboard.setType(IoBoard::CONNECTION_SERIAL, settings->value("serial_port").toString());
+    ioboard.setType(IoBoard::CONNECTION_SERIAL, settings->get("serial_port"));
 
     // Oggetti pubblicati verso QML
     // qmlRegisterType<Settings>("com.amtek.locker", 1, 0, "Settings");
@@ -61,7 +66,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty( "mysettings", settings);
     engine.rootContext()->setContextProperty( "ds", &dataSource);
 
-    engine.rootContext()->setContextProperty( "farmacia_name", settings->value("farmacia").toString());    // Per l'intestazione della finestra
+    engine.rootContext()->setContextProperty( "farmacia_name", settings->get("farmacia"));    // Per l'intestazione della finestra
 
     qmlRegisterType<Prenotazione>("com.amtek.locker", 1, 0, "Prenotazione");
 

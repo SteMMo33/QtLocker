@@ -5,20 +5,23 @@
 
 
 
-class pos
+class Pos
 {
 public:
 
     typedef enum _posType {
-        POSTYPE_WINEPTS,
-        POSTYPE_SER,
-        POSTYPE_PPP
+        POSTYPE_WINEPTS,    // Usa WinEPTS tipo COOP
+        POSTYPE_USBSER,     // Seriale virtuale
+        POSTYPE_PPP         // Comunicazione socket PPP
     } PosType;
 
 
-    pos( PosType posType = POSTYPE_SER);
+    // Costruttore
+    Pos( PosType posType = POSTYPE_USBSER);
 
     int posPay(float fValue);
+    int posPay(int nEuroCent);
+
     int posEnable();
     int posDisable();
     int posReset();

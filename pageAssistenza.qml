@@ -5,8 +5,8 @@ import QtQuick.Window 2.2
 
 Window {
     id: pageAssistenza
-    width: 950
-    height: 700
+    width: 1000
+    height: 800
 
     visible: true
     visibility: Window.FullScreen
@@ -57,6 +57,7 @@ Window {
             console.log("> Pressed ritorna")
             // parent.source = "qrc:/main.qml"
             Loader.source = ""
+            pageAssistenza.close()
         }
     }
 
@@ -97,13 +98,44 @@ Window {
         onPressedChanged: ioBoard.apriCassetto(33)
     }
 
-    ListView {
-        id: listView
-        x: 446
-        y: 381
-        width: 405
-        height: 160
-        model: mysettings/* ListModel {
+
+    Rectangle {
+        id: rectangle
+        x: 337
+        y: 325
+        width: 402
+        height: 228
+        color: "#ffffff"
+        radius: 5
+        border.width: 2
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        Text {
+            id: element1
+            color: "#ff0404"
+            text: qsTr("Settings:")
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            font.pixelSize: 19
+            horizontalAlignment: Text.AlignLeft
+            lineHeight: 1.2
+            anchors.rightMargin: 5
+            anchors.leftMargin: 5
+            anchors.topMargin: 5
+            fontSizeMode: Text.VerticalFit
+        }
+
+        ListView {
+            id: listView
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: element1.bottom
+            anchors.bottom: parent.bottom
+            anchors.topMargin: 0
+            interactive: false
+            model: mysettings.getObjMap()   /* ListModel {
             ListElement {
                 name: "Grey"
                 key: "key1"
@@ -122,41 +154,43 @@ Window {
                 colorCode: "blue"
             }
 
-            ListElement {
-                name: "Green"
-                colorCode: "green"
-            }
         } */
-        delegate: Item {
-            x: 5
-            width: 120
-            height: 40
-            Row {
-                id: row1
-                Rectangle {
-                    width: 40
-                    height: 40
-                    color: colorCode
-                }
+            delegate: Item {
+                x: 5
+                width: 120
+                height: 40
+                Row {
+                    id: row1
+                    Rectangle {
+                        width: 40
+                        height: 40
+                        color: "#ffaaaa"
+                    }
 
-                Text {
-                    text: "Key"
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.bold: true
+                    Text {
+                        text: "Key"
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.bold: true
+                    }
+                    Text {
+                        text: "Val "+model.emailFarmacia
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.bold: true
+                    }
+                    spacing: 10
                 }
-                Text {
-                    text: "N:"+name
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.bold: true
-                }
-                spacing: 10
             }
         }
     }
-
 
 }
 
 
 
 
+
+/*##^##
+Designer {
+    D{i:9}D{i:10}
+}
+##^##*/

@@ -27,18 +27,18 @@ int SendEmail::send()
     // Now we create a MimeMessage object. This is the email.
     MimeMessage message;
 
-    EmailAddress sender("s.mora@amtek.it", "Your Name");
+    EmailAddress sender("s.mora@amtek.it", "QT Kiosk");
     message.setSender(&sender);
 
-    EmailAddress to("s.mora@amtek.it", "Locker");
+    EmailAddress to("s.mora@amtek.it", "Kiosk user");
     message.addRecipient(&to);
 
-    message.setSubject("SmtpClient for Qt - Demo");
+    message.setSubject("Notifica dal Locker");
 
     // Now add some text to the email.
     // First we create a MimeText object.
     MimeText text;
-    text.setText("Hi,\nThis is a simple email message from AMtek Locker.\n");
+    text.setText("NOTIFICA DAL LOCKER AMtek,\n\nSemplice notifca dal Locker AMtek.\nGrazie per l'attenzione\n\n");
 
     // Now add it to the mail
     message.addPart(&text);

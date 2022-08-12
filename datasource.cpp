@@ -7,7 +7,7 @@
 
 DataSource::DataSource()
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("localhost");
     db.setDatabaseName("kiosk");
     db.setUserName("root");
@@ -76,7 +76,7 @@ MachineSettings* DataSource::getSettings()
         if (strCleanValue.endsWith("'")) strCleanValue.remove( strCleanValue.length()-1, 1);
 
         QString strKey = query.value("name").toString();
-        set->insert( strKey, QVariant::fromValue(strCleanValue));
+        set->insert( strKey, strCleanValue);
     }
     return set;
 };

@@ -5,9 +5,7 @@ import com.amtek.locker 1.0
 
 Window {
 
-    id: window
-    width: 900
-    height: 800
+    id: mainWindow
     visible: true
     visibility: Window.FullScreen
     color: "black"
@@ -206,11 +204,12 @@ Window {
         BtnLocker {
             id: btnLockerRitiroArticolo
             x: 14
-            y: 25
             width: 589
-            height: 410
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 90
+            anchors.top: parent.top
+            anchors.topMargin: 90
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
             textSecSize: 23
             textMainSize: 48
             textSec:  "Clicca qui per ritirare un articolo"
@@ -354,7 +353,7 @@ Window {
                 anchors.rightMargin: 0
                 textSec: ""
                 textMain: "Set int. table"
-                onClick: ioBoard.setInternalTable()
+                onClick: ioBoard.setInternalTable(14)
             }
 
         }
@@ -387,7 +386,6 @@ Window {
             anchors.fill: parent
 
 
-
             Text {
                 id: lblInserisci
                 x: -100
@@ -417,8 +415,6 @@ Window {
                 anchors.top: lblInserisci.bottom
                 anchors.topMargin: 10
                 anchors.horizontalCenter: parent.horizontalCenter
-
-
 
                 TextInput {
                     id: edtCodicePrenotazione
@@ -453,6 +449,12 @@ Window {
                         console.log("onActFocusOnPressChgd: "+focus);
                     }
 
+                    onAccepted: function(){
+                        console.log("Code Accepted")
+                        pnlRitiro.visible = false
+                        pnlHome.visible = true
+                    }
+
 
                 }
 
@@ -462,11 +464,7 @@ Window {
                     onClicked: pnlKeyboard.visible = true
                 }
 
-
-
             }
-
-
 
 
             Text {
@@ -721,8 +719,6 @@ Window {
                 onClick: showHome()
             }
 
-
-
         }
     }
 
@@ -921,6 +917,7 @@ Window {
             fontSizeMode: Text.Fit
         }
     }
+
 }
 
 
@@ -929,8 +926,4 @@ Window {
 
 
 
-/*##^##
-Designer {
-    D{i:38}
-}
-##^##*/
+

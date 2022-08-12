@@ -6,23 +6,30 @@
  * @param posType
  * Costruttore
  */
-pos::pos(PosType posType) : _posType(posType)
+Pos::Pos(PosType posType) : _posType(posType)
 {
     qDebug() << "[pos] C'tor";
 }
 
 
 
-int pos::posEnable()
+int Pos::posEnable()
 {
     qDebug() << "[pos] Enable";
     return 1;
-};
+}
 
 
 
-int pos::posDisable()
+int Pos::posDisable()
 {
     qDebug() << "[pos] Disable";
     return 1;
-};
+}
+
+
+int Pos::posPay(int nEuroCent)
+{
+    qDebug() << "[pos] Pay " << nEuroCent;
+    return 1;
+}

@@ -40,7 +40,7 @@ IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL)
     );
 
     QUrl url ("ws://localhost:7681");
-    url.setHost("10.191.40.216");
+    // url.setHost("10.191.40.216");
 
     qDebug() << "[IoBoard] url: " << url.toString() << " - Scheme: " << url.scheme() << " - Host: " << url.host() << " - Port: " << url.port();
     qDebug() << "[IoBoard] state:" << _ws.state();
@@ -251,7 +251,7 @@ int IoBoard::sendSerial(unsigned char* buffer, int size)
 {
     int waitTimeout = 5000;
 
-    qDebug() << "[IoBoard] TX:" << QByteArray((char*)buffer, size).toHex() << this;
+    qDebug() << "[IoBoard][sendSerial] TX:" << QByteArray((char*)buffer, size).toHex() << this;
     _serial.write((char*)buffer, size);
 
     if (_serial.waitForBytesWritten(waitTimeout)) {
@@ -269,7 +269,7 @@ int IoBoard::sendSerial(unsigned char* buffer, int size)
         }
     }
     else {
-        qDebug() << "[] TO Write";
+        qDebug() << "[sendSerial] TO Write";
         return -2;
     }
     //
