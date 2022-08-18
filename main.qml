@@ -7,7 +7,7 @@ Window {
 
     id: mainWindow
     visible: true
-    visibility: Window.FullScreen
+    visibility: Qt.WindowFullScreen
     color: "black"
     title: qsTr("QtLocker")
 
@@ -34,6 +34,10 @@ Window {
         id: ld
     }
 
+    Rectangle {
+
+        id: pnlState
+        anchors.fill: parent
 
     Rectangle {
         id: pnlHeader
@@ -72,16 +76,7 @@ Window {
                 anchors.bottomMargin: 10
                 anchors.leftMargin: 20
 
-                property variant win;
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        console.log("Open pageAssistenza")
-                        ld.source = "pageAssistenza.qml"
-                    }
-                }
+                // property variant win;
 
                 Image {
                     id: image1
@@ -92,6 +87,18 @@ Window {
                     anchors.bottomMargin: 20
                     anchors.topMargin: 20
                     fillMode: Image.PreserveAspectFit
+                }
+
+                MouseArea {
+                    id: mouseArea
+                    x: 10
+                    y: 20
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        console.log("Open pageAssistenza")
+                        ld.source = "pageAssistenza.qml"
+                    }
                 }
 
             }
@@ -174,14 +181,15 @@ Window {
                 BtnLocker {
                     id: btnLockerDeposito
                     anchors.fill: parent
-                    textSecSize: 11
                     anchors.rightMargin: 10
                     anchors.leftMargin: 10
                     anchors.bottomMargin: 10
                     anchors.topMargin: 10
+                    textSecSize: 11
                     textSec: "Clicca per il deposito"
                     textMain: "DEPOSITO ARTICOLO"
                     onClick: function(){
+                        console.log("> Click deposito")
                         pnlDeposito.visible=true
                         pnlHome.visible=false
                         pnlRitiro.visible = false
@@ -340,7 +348,10 @@ Window {
                 anchors.rightMargin: 0
                 textSec: ""
                 textMain: "Email"
-                onClick: prenotazioni.sendEmail()
+                onClick: {
+                    console.log("> email")
+                    prenotazioni.sendEmail()
+                }
             }
 
             BtnLocker {
@@ -451,10 +462,8 @@ Window {
 
                     onAccepted: function(){
                         console.log("Code Accepted")
-                        pnlRitiro.visible = false
-                        pnlHome.visible = true
+                        showHome()
                     }
-
 
                 }
 
@@ -635,9 +644,9 @@ Window {
                         keyName: "CANC"
                         onPressedChanged: function(){
                             if (pressedButtons){
-                            // showHome()
-                            // edtCodicePrenotazione.text = edtCodicePrenotazione.text.substring( 0, edtCodicePrenotazione.text.length)
-                            edtCodicePrenotazione.text = edtCodicePrenotazione.text.slice( 0, -1)
+                                // showHome()
+                                // edtCodicePrenotazione.text = edtCodicePrenotazione.text.substring( 0, edtCodicePrenotazione.text.length)
+                                edtCodicePrenotazione.text = edtCodicePrenotazione.text.slice( 0, -1)
                             }
                         }
                     }
@@ -728,121 +737,8 @@ Window {
         // onImportoChanged: function(x) { console.log("! importoChanged ", x)}
     }
 
-    Rectangle {
+    PnlPagamento {
         id: pnlPagamento
-        visible: false
-        color: "#000000"
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: pnlHeader.bottom
-        anchors.bottom: parent.bottom
-
-
-        Timer {
-            property var fase: 0
-            id: timerSimul
-            running: false
-            interval: 3000
-            repeat: true
-            onTriggered: {
-                console.log("!timer "+fase)
-                switch(fase){
-                case 0:
-                    txtMsgPos.text = "Attendere la fine operazione .."
-                    fase = 1;
-                    break;
-                case 1:
-                    txtMsgPos.text = "PAGATO CORRETTAMENTE - TODO"
-                    fase = 2;
-                    break;
-                case 2:
-                    pnlPagamento.visible = false
-                    testo1.text = "Ritirare dal cassetto "+currentPrenotazione.cassetto
-                    testo2.text = "Prego .."
-                    pnlRitiroCassetto.visible = true
-                    // fallback
-                default:
-                    fase = 0
-                    timerSimul.running = false
-                    console.log("Fine timer simul")
-                }
-            }
-        }
-
-        Rectangle {
-            id: pnlPagamentoInterno
-            width: 600
-            visible: true
-            color: "#00000000"
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.topMargin: 40
-            Text {
-                id: txtValorePos
-                height: 69
-                visible: true
-                color: "#f1ed02"
-                text: qsTr("Importo da pagare")
-                anchors.left: parent.left
-                anchors.right: parent.right
-                font.pixelSize: 31
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                font.bold: true
-                font.family: "Proxima Nova Rg"
-                anchors.leftMargin: 0
-                fontSizeMode: Text.VerticalFit
-            }
-
-            Text {
-                id: txtMsgPos
-                color: "#fed513"
-                text: qsTr("MsgPos")
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: txtValorePos.bottom
-                font.pixelSize: 20
-                horizontalAlignment: Text.AlignHCenter
-                anchors.topMargin: 20
-                font.bold: true
-                anchors.rightMargin: 0
-                anchors.leftMargin: 0
-            }
-
-            BtnLocker {
-                id: btnPagaConPos
-                width: 454
-                height: 288
-                anchors.top: txtMsgPos.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                textMain: "Paga con POS"
-                textSec: "Clicca per pagare con il POS"
-                anchors.topMargin: 50
-                onClick: {
-                    console.log("Paga POS - TODO")
-                    timerSimul.running = true
-                }
-            }
-
-            BtnLocker {
-                id: btnPagaRitorna
-                y: 527
-                width: 720
-                height: 73
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 50
-                anchors.horizontalCenter: parent.horizontalCenter
-                textMain: "RITORNA ALLA PAGINA INIZIALE"
-                textSec: ""
-                onClick: showHome()
-            }
-
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            onVisibleChanged: {
-                if (visible) txtMsgPos.text = ""
-            }
-        }
     }
 
 
@@ -918,6 +814,27 @@ Window {
         }
     }
 
+
+
+    states: [
+        State {
+            name: "Deposito"
+            PropertyChanges {
+                target: object
+
+            }
+        },
+        State {
+            name: "Ritiro"
+            PropertyChanges {
+                target: object
+
+            }
+        }
+    ]
+
+
+    }
 }
 
 
@@ -927,3 +844,9 @@ Window {
 
 
 
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:700;width:900}
+}
+##^##*/

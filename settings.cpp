@@ -38,7 +38,7 @@ MachineSettings::MachineSettings()
 }
 
 
-void MachineSettings::insert(QString &key, QString &value)
+void MachineSettings::insert(QString key, QString value)
 {
     _settings.insert( key, value);
 }

@@ -18,7 +18,7 @@ Printer::Printer()
     QPrinter printer;
 
     QPrinterInfo* info = new QPrinterInfo();
-    qDebug() << "PI: " << info->defaultPrinter().description();
+    qDebug() << "Default printer: " << info->defaultPrinter().description();
     qDebug() << "PID: " << info->description();
 
     QStringList printers = info->availablePrinterNames();
@@ -26,9 +26,9 @@ Printer::Printer()
         qDebug() << "P: " << printers.at(i);
     }
 
-    QList<QPrinterInfo> infos = info->availablePrinters();
+    /* QList<QPrinterInfo> infos = info->availablePrinters();
     for(int i=0; i < infos.size(); i++){
         qDebug() << "I: " << info->makeAndModel();
-    }
+    } */
 }
 

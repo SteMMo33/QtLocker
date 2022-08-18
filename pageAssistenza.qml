@@ -9,20 +9,26 @@ Window {
     height: 800
 
     visible: true
-    visibility: Window.FullScreen
+    // visibility: Window.FullScreen
+    visibility: Qt.WindowFullScreen
     title: "Pagina assistenza"
 
     BtnKeyboard {
-        id: btnKeyboard
+        id: btnKeyboard1
         x: 41
         y: 140
         width: 212
         height: 78
         keyName: "Cassetto 1"
+        onPressedChanged: {
+            console.log("PP")
+            ioBoard.apriCassetto(1);
+        }
+
     }
 
     BtnKeyboard {
-        id: btnKeyboard1
+        id: btnKeyboard2
         x: 41
         y: 224
         width: 212
@@ -43,7 +49,7 @@ Window {
     }
 
     BtnKeyboard {
-        id: btnKeyboard2
+        id: btnKeyboardReturn
         x: 80
         y: 506
         width: 624
@@ -62,7 +68,7 @@ Window {
     }
 
     BtnKeyboard {
-        id: btnKeyboard3
+        id: btnKeyboardApriTutti
         x: 446
         y: 140
         width: 309
@@ -72,7 +78,7 @@ Window {
     }
 
     BtnKeyboard {
-        id: btnKeyboard4
+        id: btnKeyboardVite
         x: 446
         y: 224
         width: 309
@@ -103,13 +109,15 @@ Window {
         id: rectangle
         x: 337
         y: 325
-        width: 402
+        width: 500
         height: 228
         color: "#ffffff"
         radius: 5
         border.width: 2
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: 20
+        anchors.bottomMargin: 130
 
         Text {
             id: element1
@@ -189,8 +197,4 @@ Window {
 
 
 
-/*##^##
-Designer {
-    D{i:9}D{i:10}
-}
-##^##*/
+

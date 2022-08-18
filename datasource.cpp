@@ -66,9 +66,12 @@ MachineSettings* DataSource::getSettings()
     MachineSettings* set = new MachineSettings();
 
     QSqlQuery query("select * from settings;");
-    // Loop su tutti i valori in tabella
-    while (query.next()) {
-        // qDebug()<< query.value("name") << " > " << query.value("value");
+
+    if (query.isValid())
+    {
+        // Loop su tutti i valori in tabella
+        while (query.next()) {
+            // qDebug()<< query.value("name") << " > " << query.value("value");
 
         // Pulisce la stringa da eventuali apici estremi
         QString strCleanValue = query.value("value").toString();
@@ -77,7 +80,12 @@ MachineSettings* DataSource::getSettings()
 
         QString strKey = query.value("name").toString();
         set->insert( strKey, strCleanValue);
+        }
     }
+    else {
+        set->insert( QString("serial_port"), QString("COM16"));
+    }
+
     return set;
 };
 

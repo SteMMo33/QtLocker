@@ -9,5 +9,6 @@
         <file>images/qr_code.png</file>
         <file>pageAssistenza.qml</file>
         <file>images/logo-amtek.png</file>
+        <file>PnlPagamento.qml</file>
     </qresource>
 </RCC>

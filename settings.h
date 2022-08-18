@@ -17,7 +17,8 @@ public:
 
     //QString operator[](const QString &key){ return this[key]; };
 
-    void insert(QString &key, QString &value);
+    void insert(QString key, QString value);
+
     Q_INVOKABLE QString get(QString key){ return _settings[key]; };
 
     // con QVariantMap -- Q_INVOKABLE QString get(QString key){ return this->value(key).toString(); };

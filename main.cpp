@@ -23,7 +23,7 @@
  */
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
     qDebug() << "Platform: " << app.platformName();
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     qDebug() << "serial: " << settings->get("serial_port");
 
     IoBoard ioboard;
-    ioboard.setType(IoBoard::CONNECTION_SERIAL, settings->get("serial_port"));
+    ioboard.setType(IoBoard::CONNECTION_SERIAL_AMDB002, settings->get("serial_port"));
 
     // Oggetti pubblicati verso QML
     // qmlRegisterType<Settings>("com.amtek.locker", 1, 0, "Settings");

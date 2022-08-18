@@ -20,7 +20,7 @@
  * Costruttore oggetto IoBoard che comunica via websocket
  */
 //! [constructor]
-IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL)
+IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL_GPU), _ambd002()
 {
     qDebug() << "C'tor IoBoard" << this;
 
@@ -39,21 +39,23 @@ IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL)
             }
     );
 
-    QUrl url ("ws://localhost:7681");
-    // url.setHost("10.191.40.216");
+        QUrl url ("ws://localhost:7681");
+        // url.setHost("10.191.40.216");
 
-    qDebug() << "[IoBoard] url: " << url.toString() << " - Scheme: " << url.scheme() << " - Host: " << url.host() << " - Port: " << url.port();
-    qDebug() << "[IoBoard] state:" << _ws.state();
-    _ws.open(url);
-    qDebug() << "[IoBoard] state:" << _ws.state();
+        qDebug() << "[IoBoard] url: " << url.toString() << " - Scheme: " << url.scheme() << " - Host: " << url.host() << " - Port: " << url.port();
+        qDebug() << "[IoBoard] state:" << _ws.state();
+        _ws.open(url);
+        qDebug() << "[IoBoard] state:" << _ws.state();
 
     }
-    else {
-
+    else if (_type == CONNECTION_SERIAL_GPU)  // Versione SERIAL_GPU
+    {
         // -- Collegamento con la porta seriale
         const auto infos = QSerialPortInfo::availablePorts();
+        qDebug() << "Lista porte seriali:";
         for (const QSerialPortInfo &info : infos)
             qDebug() << info.portName();
+        qDebug() << "--- Fine lista ";
 
     } // if SERIAL
 }
@@ -147,8 +149,13 @@ void IoBoard::onStateChanged(QAbstractSocket::SocketState state)
 
 
 
-
-int IoBoard::setType(ConnectionType type, QString serialName)
+/**
+ * @brief IoBoard::setType
+ * @param type
+ * @param serialName
+ * @return
+ */
+IoBoard::IoRet IoBoard::setType(ConnectionType type, QString serialName)
 {
     _type = type;
     _serialName = serialName;
@@ -156,23 +163,41 @@ int IoBoard::setType(ConnectionType type, QString serialName)
 
     qDebug() << "[IoBoard] Serial:" << _serialName;
 
-    if (_serial.isOpen()) _serial.close();
+    if (_type == CONNECTION_SERIAL_GPU)
+    {
+        if (_serial.isOpen()) _serial.close();
 
-    _serial.setPortName(_serialName);
-    if (!_serial.open(QIODevice::ReadWrite)) {
-        qDebug() << tr("!! Can't open %1, error code %2").arg(_serialName).arg(_serial.error());
-        return 0;
-    }
+        _serial.setPortName(_serialName);
+        if (!_serial.open(QIODevice::ReadWrite)) {
+            qDebug() << tr("!! Can't open %1, error code %2").arg(_serialName).arg(_serial.error());
+            return IORET_ERR;
+        }
+        // Impostazione porta
         _serial.setBaudRate(9600);
         _serial.setDataBits(QSerialPort::Data8);
         _serial.setFlowControl(QSerialPort::NoFlowControl);
         _serial.setParity(QSerialPort::NoParity);
         _serial.setStopBits(QSerialPort::OneStop);
-    return 1;
+        return IORET_OK;
+    }
+    else if (_type == CONNECTION_SERIAL_AMDB002)
+    {
+        Ambd002::AmbdRet ret = _ambd002.open(serialName);
+        if (ret != Ambd002::Ok)
+            return IORET_ERR;
+    }
+    return IORET_UNSUPPORTED;
 }
 
 
 
+/**
+ * @brief IoBoard::crc
+ * Calcolo del CRC versione per GPU
+ * @param buffer
+ * @param size
+ * @return
+ */
 unsigned char IoBoard::crc( unsigned char* buffer, int size)
 {
     unsigned char crc = 0x7F;
@@ -187,14 +212,23 @@ unsigned char IoBoard::crc( unsigned char* buffer, int size)
  * @param nCassetto
  * @return
  */
-int IoBoard::apriCassetto(int nCassetto)
+IoBoard::IoRet IoBoard::apriCassetto(int nCassetto)
 {
     qDebug() << "[IoBoard] apriCassetto:" << nCassetto;
 
     if (_type==CONNECTION_WS){
         _ws.sendTextMessage(QString("{\"AperCassetto\":%1}").arg(nCassetto));
     }
-    else {
+    else if (_type==CONNECTION_SERIAL_AMDB002)
+    {
+        qDebug() << "[AMBD002] apriCassetto " << nCassetto;
+        _ambd002.getCoils();
+    }
+    else  // CONNECTION_GPU
+    {
+        if (!_serial.isOpen()){
+            return IORET_PORTCLOSED;
+        }
         unsigned char cmd[] = { 0x3B, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF };
         cmd[5] = char(nCassetto);
         cmd[6] = crc( cmd, 6);
@@ -204,7 +238,7 @@ int IoBoard::apriCassetto(int nCassetto)
                 qDebug() << "[] Apertura OK";
         }
     }
-    return 1;
+    return IORET_OK;
 };
 
 
@@ -214,7 +248,7 @@ int IoBoard::apriCassetto(int nCassetto)
  * @param nCassetto
  * @return
  */
-int IoBoard::leggiCassetto(int nCassetto)
+IoBoard::IoRet IoBoard::leggiCassetto(int nCassetto)
 {
     qDebug() << "[IoBoard] leggiCassetto:" << nCassetto;
 
@@ -236,7 +270,7 @@ int IoBoard::leggiCassetto(int nCassetto)
             qDebug() << "[IoBoard] Errore comando: " << ret;
         }
     }
-    return 1;
+    return IORET_OK;
 };
 
 
@@ -291,9 +325,13 @@ int IoBoard::sendSerial(unsigned char* buffer, int size)
  * @brief IoBoard::setInternalTable
  * Funzione per settare la tabella interna alla CPU per associazione codice - cassetto
  * ed abilitare tutti i cassetti
+ * @note Solo per seriale GPU
  */
-int IoBoard::setInternalTable(int nCassetti)
+IoBoard::IoRet IoBoard::setInternalTable(int nCassetti)
 {
+    if (_type != CONNECTION_SERIAL_GPU)
+        return IORET_UNSUPPORTED;
+
     int c = 1;
     while (c <= nCassetti){
         unsigned char cmd[] = { 0x04, 0x08, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xEE };
@@ -309,6 +347,6 @@ int IoBoard::setInternalTable(int nCassetti)
         }
         ++c;
     }
-    return 1;
+    return IORET_OK;
 }
 
