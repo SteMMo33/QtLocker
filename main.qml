@@ -15,16 +15,19 @@ Window {
     property alias edtCodicePrenotazione: edtCodicePrenotazione
 
     property var currentPrenotazione
+    property var tipoOperazione
 
     FontLoader { id: proximaNovaBold; source: "fonts/ProximaNova-Bold.otf" }
     FontLoader { id: proximaNovaRegular; source: "fonts/ProximaNova-Regular.otf" }
+
+    Component.onCompleted: showHome()   // Script iniziale
 
     function showHome(){
         pnlDeposito.visible = false
         pnlRitiro.visible = false
         pnlPagamento.visible = false
         btnLockerDeposito.visible = true
-        pnlRitiroCassetto.visible = false
+        pnlOperazioneCassetto.visible = false
 
         txtHeaderC2.text = "SELEZIONA IL SERVIZIO"
         pnlHome.visible = true
@@ -186,13 +189,15 @@ Window {
                     anchors.bottomMargin: 10
                     anchors.topMargin: 10
                     textSecSize: 11
-                    textSec: "Clicca per il deposito"
+                    textSec: "Clicca per fare un deposito"
                     textMain: "DEPOSITO ARTICOLO"
                     onClick: function(){
                         console.log("> Click deposito")
-                        pnlDeposito.visible=true
+                        // pnlDeposito.visible=true
                         pnlHome.visible=false
-                        pnlRitiro.visible = false
+
+                        tipoOperazione = "deposito"
+                        pnlRitiro.visible = true
                         txtHeaderC2.text = "DEPOSITO ARTICOLO"
                     }
                 }
@@ -214,15 +219,16 @@ Window {
             x: 14
             width: 589
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 90
+            anchors.bottomMargin: 150
             anchors.top: parent.top
-            anchors.topMargin: 90
+            anchors.topMargin: 150
             anchors.horizontalCenter: parent.horizontalCenter
             textSecSize: 23
             textMainSize: 48
             textSec:  "Clicca qui per ritirare un articolo"
             textMain: "RITIRO ARTICOLO"
             onClick: function(){
+                tipoOperazione = 'ritiro'
                 pnlRitiro.visible = true
                 pnlHome.visible = false
                 btnLockerDeposito.visible = false
@@ -250,7 +256,7 @@ Window {
 
     Rectangle {
         id: pnlDeposito
-        visible: false
+        visible: true
         color: "#000000"
         anchors.left: parent.left
         anchors.right: parent.right
@@ -376,7 +382,7 @@ Window {
 
     Rectangle {
         id: pnlRitiro
-        visible: false
+        visible: true
         color: "#000000"
         anchors.left: parent.left
         anchors.right: parent.right
@@ -384,11 +390,16 @@ Window {
         anchors.bottom: parent.bottom
 
         onVisibleChanged: {
-            console.log("- pnlRitiro visible:"+visible)
+            console.log("- pnlRitiro visible:"+visible+ " - "+tipoOperazione)
             if (visible){
                 txtMsg.text = ""
                 edtCodicePrenotazione.text = ""
                 edtCodicePrenotazione.focus = true
+
+                if (tipoOperazione==='deposito')
+                    lblInserisci.text = "Inserisci il codice di prenotazione"
+                else
+                    lblInserisci.text = "Inserisci il codice di ritiro"
             }
         }
 
@@ -462,7 +473,7 @@ Window {
 
                     onAccepted: function(){
                         console.log("Code Accepted")
-                        showHome()
+                        handleCode()
                     }
 
                 }
@@ -585,64 +596,64 @@ Window {
                     BtnKeyboard {
                         id: btnKey1
                         keyName: "1"
-                        onPressedChanged: function(){
-                            if(pressedButtons) edtCodicePrenotazione.text += "1"
+                        mouse.onClicked: function(){
+                            edtCodicePrenotazione.text += "1"
                         }
                     }
 
                     BtnKeyboard {
                         id: btnKey2
                         keyName: "2"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "2"
+                        mouse.onClicked: edtCodicePrenotazione.text += "2"
                     }
 
                     BtnKeyboard {
                         id: btnKey3
                         keyName: "3"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "3"
+                        mouse.onClicked: edtCodicePrenotazione.text += "3"
                     }
 
                     BtnKeyboard {
                         id: btnKey4
                         keyName: "4"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "4"
+                        mouse.onClicked: if(pressedButtons) edtCodicePrenotazione.text += "4"
                     }
 
                     BtnKeyboard {
                         id: btnKey5
                         keyName: "5"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "5"
+                        mouse.onClicked: edtCodicePrenotazione.text += "5"
                     }
 
                     BtnKeyboard {
                         id: btnKey6
                         keyName: "6"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "6"
+                        mouse.onClicked: edtCodicePrenotazione.text += "6"
                     }
 
                     BtnKeyboard {
                         id: btnKey7
                         keyName: "7"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "7"
+                        mouse.onClicked: edtCodicePrenotazione.text += "7"
                     }
 
                     BtnKeyboard {
                         id: btnKey8
                         keyName: "8"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "8"
+                        mouse.onClicked: edtCodicePrenotazione.text += "8"
                     }
 
                     BtnKeyboard {
                         id: btnKey9
                         keyName: "9"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "9"
+                        mouse.onClicked: edtCodicePrenotazione.text += "9"
                     }
 
                     BtnKeyboard {
                         id: btnKbdCanc
                         textColor: "#ff0404"
                         keyName: "CANC"
-                        onPressedChanged: function(){
+                        mouse.onClicked: function(){
                             if (pressedButtons){
                                 // showHome()
                                 // edtCodicePrenotazione.text = edtCodicePrenotazione.text.substring( 0, edtCodicePrenotazione.text.length)
@@ -654,7 +665,7 @@ Window {
                     BtnKeyboard {
                         id: btnKey0
                         keyName: "0"
-                        onPressedChanged: if(pressedButtons) edtCodicePrenotazione.text += "0"
+                        mouse.onClicked: if(pressedButtons) edtCodicePrenotazione.text += "0"
                     }
 
                     BtnKeyboard {
@@ -662,51 +673,7 @@ Window {
                         textColor: "#2db502"
                         keyName: "OK"
                         mouse.onClicked: function(){
-
-                            console.log("OK - "+edtCodicePrenotazione.text)
-                            if (edtCodicePrenotazione){
-                                pnlKeyboard.visible = false
-
-                                currentPrenotazione = ds.checkCode( TipoPrenotazione.TIPO_RITIRO, edtCodicePrenotazione.text)
-                                console.log("ret: "+currentPrenotazione)
-                                if (currentPrenotazione===null)
-                                    txtMsg.text = "Prenotazione non trovata"
-                                else {
-                                    txtMsg.text = "Prenotazione trovata !"
-
-                                    console.log("id: "+currentPrenotazione.id)
-                                    console.log("cass: "+currentPrenotazione.cassetto)
-                                    console.log("imp: "+currentPrenotazione.importo)
-                                    console.log("depo: "+currentPrenotazione.isDepositata)
-                                    console.log("rit: "+currentPrenotazione.isRitirata)
-
-                                    if (!currentPrenotazione.isDepositata){
-                                        txtMsg.text = "Prenotazione non depositata"
-                                        return
-                                    }
-
-                                    if (currentPrenotazione.isRitirata){
-                                        txtMsg.text = "Prenotazione già ritirata"
-                                        return
-                                    }
-
-                                    pnlRitiro.visible = false
-
-                                    if (currentPrenotazione.importo){
-                                        txtValorePos.text = "E' richiesto il pagamento di € " + currentPrenotazione.importo.toFixed(2)
-                                        pnlPagamento.visible = true
-                                    }
-                                    else {
-                                        testo1.text = "Prelevare dal cassetto n. " + currentPrenotazione.cassetto
-                                        testo2.text = "Prelevare dal cassetto n. " + currentPrenotazione.cassetto
-                                        testo3.text = "Dopo il ritiro per cortesia chiudere il cassetto"
-                                        pnlRitiroCassetto.visible = true
-                                        timerRitiroCassetto.running = 1
-
-                                        ioBoard.apriCassetto(currentPrenotazione.cassetto)
-                                    }
-                                }
-                            }
+                            handleCode();
                         }
                     }
 
@@ -744,8 +711,8 @@ Window {
 
 
     Rectangle {
-        id: pnlRitiroCassetto
-        visible: false
+        id: pnlOperazioneCassetto
+        visible: true
         color: "#000000"
         anchors.left: parent.left
         anchors.right: parent.right
@@ -753,6 +720,7 @@ Window {
         anchors.bottom: parent.bottom
 
         onVisibleChanged: {
+            console.log("pnlOperazioneCassetto "+visible)
             if (visible) timerRitiroCassetto.running = 1
         }
 
@@ -815,6 +783,12 @@ Window {
     }
 
 
+    Timer {
+        id: timerEsito
+        interval: 2000; running: false; repeat: false
+        onTriggered: txtMsg.text = ""
+    }
+
 
     states: [
         State {
@@ -835,18 +809,93 @@ Window {
 
 
     }
+
+
+    function showTimedMsg(text){
+        txtMsg.text = text
+        timerEsito.start()
+    }
+
+
+function handleCode()
+{
+    console.log("OK - "+edtCodicePrenotazione.text+" - tipoOperazione:"+tipoOperazione)
+
+    if (edtCodicePrenotazione){
+        pnlKeyboard.visible = false
+
+        currentPrenotazione = ds.checkCode(
+                    tipoOperazione==='deposito' ? TipoPrenotazione.TIPO_DEPOSITO : TipoPrenotazione.TIPO_RITIRO,
+                    edtCodicePrenotazione.text)
+
+        console.log("ret: "+currentPrenotazione)
+        if (currentPrenotazione===null)
+            showTimedMsg("Prenotazione non trovata")
+        else {
+            showTimedMsg("Prenotazione trovata !")
+
+            console.log("id: "+currentPrenotazione.id)
+            console.log("cass: "+currentPrenotazione.cassetto)
+            console.log("imp: "+currentPrenotazione.importo)
+            console.log("depo: "+currentPrenotazione.isDepositata)
+            console.log("rit: "+currentPrenotazione.isRitirata)
+
+            if(tipoOperazione==='deposito')
+            {
+                if (currentPrenotazione.isDepositata){
+                    if (currentPrenotazione.isRitirata){
+                        showTimedMsg("Prenotazione scaduta")
+                        return
+                    }
+                    showTimedMsg("Prenotazione già depositata")
+                    return
+                }
+
+                // Passo alla pagina di apertura cassetto
+                testo1.text = "Depositare nel cassetto n. " + currentPrenotazione.cassetto
+                testo2.text = "Depositare " + currentPrenotazione.cassetto
+                testo3.text = "Dopo il deposito per cortesia chiudere il cassetto"
+                pnlOperazioneCassetto.visible = true
+
+                ioBoard.apriCassetto(currentPrenotazione.cassetto)
+            }
+            else { // Ritiro !
+
+            if (!currentPrenotazione.isDepositata){
+                showTimedMsg("Prenotazione non depositata")
+                return
+            }
+
+            if (currentPrenotazione.isRitirata){
+                showTimedMsg("Prenotazione già ritirata")
+                return
+            }
+
+            pnlRitiro.visible = false
+
+            if (currentPrenotazione.importo){
+                txtValorePos.text = "E' richiesto il pagamento di € " + currentPrenotazione.importo.toFixed(2)
+                pnlPagamento.visible = true
+            }
+            else {
+                testo1.text = "Prelevare dal cassetto n. " + currentPrenotazione.cassetto
+                testo2.text = "Prelevare dal cassetto n. " + currentPrenotazione.cassetto
+                testo3.text = "Dopo il ritiro per cortesia chiudere il cassetto"
+                pnlOperazioneCassetto.visible = true
+
+                ioBoard.apriCassetto(currentPrenotazione.cassetto)
+            }
+        }
+        }
+    }
 }
 
-
-
-
-
-
-
+}
 
 
 /*##^##
 Designer {
-    D{i:0;autoSize:true;height:700;width:900}
+    D{i:0;autoSize:true;height:700;width:900}D{i:21;invisible:true}D{i:24;invisible:true}
+D{i:34;invisible:true}D{i:62;invisible:true}
 }
 ##^##*/

@@ -37,6 +37,8 @@ public:
         IORET_ERR,
         IORET_UNSUPPORTED,
         IORET_PORTCLOSED,
+        IORET_HI,
+        IORET_LO,
     };
     Q_ENUMS(IoRet)
 
@@ -44,7 +46,9 @@ public:
     IoBoard(QObject* parent = nullptr);
     virtual ~IoBoard();
 
+    Q_INVOKABLE IoRet gestisciCassetto(int nCassetto);
 
+    // Funzioni basso livello
     Q_INVOKABLE IoRet apriCassetto(int nCassetto);
     Q_INVOKABLE IoRet leggiCassetto(int nCassetto);
     Q_INVOKABLE IoRet setInternalTable(int nCassetti);

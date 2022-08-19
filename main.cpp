@@ -23,7 +23,7 @@
  */
 int main(int argc, char *argv[])
 {
-    // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
     qDebug() << "Platform: " << app.platformName();
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     // Accesso 'settings'
     qDebug() << "Farmacia: " << settings->get("farmacia");
-    qDebug() << "Cassetti: " << settings->get("numColumn");
+    qDebug() << "Cassetti: " << settings->get("numCassetti");
     qDebug() << "email: " << settings->get("emailFarmacia");
     qDebug() << "serial: " << settings->get("serial_port");
 

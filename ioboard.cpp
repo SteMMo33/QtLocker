@@ -4,8 +4,9 @@
     @abstract
   Protocollo per la porta seriale Protocollo PC - scheda CPU Locker 80 vers. 1.00.doc
 
-  Viene inserita la possibilità di selezionare la modalità di docmunicazione:
-  - seriale
+  Viene inserita la possibilità di selezionare la modalità di comunicazione:
+  - seriale con scheda GPU
+  - serial con scheda AMBD002
   - websocket
 
 !*/
@@ -22,10 +23,10 @@
 //! [constructor]
 IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL_GPU), _ambd002()
 {
-    qDebug() << "C'tor IoBoard" << this;
+    qDebug() << "C'tor IoBoard type:" << _type << this;
 
-    if (_type == CONNECTION_WS) {
-
+    if (_type == CONNECTION_WS)
+    {
         // -- Collegamento con websocket
 
         QObject::connect( &_ws, &QWebSocket::connected, this, &IoBoard::onConnected);
@@ -37,7 +38,7 @@ IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL_GPU
             [=](QAbstractSocket::SocketError error){
                 qDebug() << "[IoBoard] Errore: " << error;
             }
-    );
+        );
 
         QUrl url ("ws://localhost:7681");
         // url.setHost("10.191.40.216");
@@ -63,19 +64,24 @@ IoBoard::IoBoard(QObject* parent) : QObject(parent), _type(CONNECTION_SERIAL_GPU
 
 
 
+
 IoBoard::~IoBoard()
 {
     qDebug() << "[IoBoard] D'ctor" << this;
 
     if (_type == CONNECTION_WS)
         _ws.close();
+    else if (_type == CONNECTION_SERIAL_AMDB002)
+        _ambd002.close();
     else
         _serial.close();
 };
 
 
+
 /**
  * @brief IoBoard::onConnected
+ * @note Versione CONNECTION_WS
  */
 //! [onConnected]
 void IoBoard::onConnected()
@@ -182,9 +188,17 @@ IoBoard::IoRet IoBoard::setType(ConnectionType type, QString serialName)
     }
     else if (_type == CONNECTION_SERIAL_AMDB002)
     {
+        // Apertura della comunicazione
         Ambd002::AmbdRet ret = _ambd002.open(serialName);
         if (ret != Ambd002::Ok)
             return IORET_ERR;
+
+        // Configurazione dell'impianto
+        _ambd002.configCoil( 1, 1, Ambd002::LOCK_A);
+        _ambd002.configCoil( 2, 1, Ambd002::LOCK_B);
+        _ambd002.configCoil( 3, 1, Ambd002::FAN_A1);
+        _ambd002.configCoil( 4, 1, Ambd002::FAN_A2);
+        _ambd002.configCoil(22, 2, Ambd002::LOCK_A);
     }
     return IORET_UNSUPPORTED;
 }
@@ -207,6 +221,24 @@ unsigned char IoBoard::crc( unsigned char* buffer, int size)
 }
 
 
+
+/// Funzione per la gestione dell'apertura e chiusura cassetto
+/// \brief IoBoard::gestisciCassetto
+/// \param nCassetto
+/// \return
+///
+IoBoard::IoRet IoBoard::gestisciCassetto(int nCassetto)
+{
+    qDebug() << "[IoBoard] gestisciCassetto:" << nCassetto;
+
+    IoRet ret = apriCassetto(nCassetto);
+    ret = leggiCassetto(nCassetto);
+
+    return IoBoard::IORET_OK;
+};
+
+
+
 /**
  * @brief IoBoard::apriCassetto
  * @param nCassetto
@@ -221,8 +253,16 @@ IoBoard::IoRet IoBoard::apriCassetto(int nCassetto)
     }
     else if (_type==CONNECTION_SERIAL_AMDB002)
     {
+        // Genera un impulso ampio 2 secondi sul pin
         qDebug() << "[AMBD002] apriCassetto " << nCassetto;
-        _ambd002.getCoils();
+
+        Ambd002::AmbdRet ret = _ambd002.setOutput( nCassetto, 1);
+        qDebug() << "[Ioboard] ret " << ret;
+        if (ret == Ambd002::Ok){
+            QThread::sleep(2);
+            ret = _ambd002.setOutput( nCassetto, 0);
+            qDebug() << "[Ioboard] ret " << ret;
+        }
     }
     else  // CONNECTION_GPU
     {
@@ -245,6 +285,7 @@ IoBoard::IoRet IoBoard::apriCassetto(int nCassetto)
 
 /**
  * @brief IoBoard::leggiCassetto
+ * Lettura output digi
  * @param nCassetto
  * @return
  */
@@ -252,16 +293,29 @@ IoBoard::IoRet IoBoard::leggiCassetto(int nCassetto)
 {
     qDebug() << "[IoBoard] leggiCassetto:" << nCassetto;
 
-    if (_type==CONNECTION_WS){
+    if (_type==CONNECTION_WS)
+    {
         _ws.sendTextMessage(QString("{\"LeggiCassetto\":%1}").arg(nCassetto));
     }
-    else {
+    else if (_type == CONNECTION_SERIAL_AMDB002)
+    {
+        bool bStato;
+        Ambd002::AmbdRet ret = _ambd002.getInput( 1, Ambd002::LOCK_A_STS1, &bStato);
+        qDebug() << "[IoBoard][leggiCassetto] ret:" << ret << " - Stato:" << bStato;
+        if (ret==Ambd002::Ok)
+            return bStato ? IORET_HI : IORET_LO;
+        else
+            return IORET_ERR;
+    }
+    else if (_type == CONNECTION_SERIAL_GPU)
+    {
         unsigned char cmd[] = { 0x3C, 0x01, 0xFF, 0xFF };
         cmd[2] = (char)nCassetto;
         cmd[3] = crc( cmd, 3);
         int ret = sendSerial(cmd, 4);
         if (ret > 0){
-            if (_response.at(1)==0x3C){   // Controlla che sia una sua risposta
+            if (_response.at(1)==0x3C)
+            {   // Controlla che sia una sua risposta
                 // Decodifica risposta
                 qDebug() << "[] index:" << QChar(_response.at(3)) << " - " << (_response.at(4) ? "aperto" : "chiuso");
             }
@@ -270,6 +324,7 @@ IoBoard::IoRet IoBoard::leggiCassetto(int nCassetto)
             qDebug() << "[IoBoard] Errore comando: " << ret;
         }
     }
+    else return IORET_UNSUPPORTED;
     return IORET_OK;
 };
 

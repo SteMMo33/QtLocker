@@ -71,19 +71,28 @@ MachineSettings* DataSource::getSettings()
     {
         // Loop su tutti i valori in tabella
         while (query.next()) {
-            // qDebug()<< query.value("name") << " > " << query.value("value");
+            qDebug()<< query.value("name") << " > " << query.value("value");
 
-        // Pulisce la stringa da eventuali apici estremi
-        QString strCleanValue = query.value("value").toString();
-        if (strCleanValue.startsWith("'")) strCleanValue.remove(0,1);
-        if (strCleanValue.endsWith("'")) strCleanValue.remove( strCleanValue.length()-1, 1);
+            // Pulisce la stringa da eventuali apici estremi
+            QString strCleanValue = query.value("value").toString();
+            if (strCleanValue.startsWith("'")) strCleanValue.remove(0,1);
+            if (strCleanValue.endsWith("'")) strCleanValue.remove( strCleanValue.length()-1, 1);
 
-        QString strKey = query.value("name").toString();
-        set->insert( strKey, strCleanValue);
+            QString strKey = query.value("name").toString();
+            set->insert( strKey, strCleanValue);
         }
     }
-    else {
+    else    // Valori predefiniti
+    {
+
+#ifdef Q_OS_WIN
         set->insert( QString("serial_port"), QString("COM16"));
+#else
+        set->insert( QString("serial_port"), QString("/dev/ttyUSB0"));
+#endif
+        set->insert( "numCassetti", "10");
+        set->insert( "emailFarmacia", "s.mora@amtek.it");
+        set->insert( "farmacia", "Farmacia di test");
     }
 
     return set;
@@ -103,13 +112,13 @@ Prenotazione* DataSource::checkCode(TipoPrenotazione tipo, QString codice)
 {
     Prenotazione* p = nullptr;
 
-    QString nameType = tipo == TipoPrenotazioneClass::TIPO_RITIRO ? "codice_prenotazione" : "numero_consegna";
+    QString nameType = tipo == TipoPrenotazioneClass::TIPO_RITIRO ? "numero_consegna" : "codice_prenotazione";
     QString strQuery = QString("select * from prenotazioni where %1='%2';").arg(nameType).arg(codice);
     QSqlQuery query(strQuery);
 
-    qDebug() << "[DataSource] query = '" << strQuery;
-    qDebug() << "[DataSource] size = " << strQuery.size();
-    qDebug() << "[DataSource] isEmpty = " << strQuery.isEmpty();
+    qDebug() << "[DataSource] query = " << strQuery;
+    qDebug() << "[DataSource] isValid = " << query.isValid();
+    qDebug() << "[DataSource] result: " << query.result();
 
     if (query.next()) {
         p = new Prenotazione();
@@ -119,12 +128,9 @@ Prenotazione* DataSource::checkCode(TipoPrenotazione tipo, QString codice)
         p->_isRitirata = query.value("ritirata").toBool();
         p->_cassetto = query.value("id_cassetto_ws").toUInt();
         p->_importo = query.value("importo_da_pagare").toFloat();
-
-        qDebug()<< "[DataSource] p:" << p;
     }
 
     checkResultReady();     // Segnale !!
-
     return p;
 };
 

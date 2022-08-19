@@ -5,8 +5,6 @@ import QtQuick.Window 2.2
 
 Window {
     id: pageAssistenza
-    width: 1000
-    height: 800
 
     visible: true
     // visibility: Window.FullScreen
@@ -20,8 +18,7 @@ Window {
         width: 212
         height: 78
         keyName: "Cassetto 1"
-        onPressedChanged: {
-            console.log("PP")
+        mouse.onClicked: {
             ioBoard.apriCassetto(1);
         }
 
@@ -32,15 +29,18 @@ Window {
         x: 41
         y: 224
         width: 212
-        height: 90
+        height: 78
         keyName: "Cassetto 2"
+        mouse.onClicked: {
+            console.log("Cass 2")
+        }
     }
 
     Text {
         id: element
         x: 185
         y: 23
-        text: qsTr("ASSISTENZA") + " - Colonne: " + mysettings.get("numColumn")
+        text: qsTr("ASSISTENZA") + " - Cassetti: " + mysettings.get("numCassetti")
         font.pixelSize: 46
         font.family: "Proxima Nova Rg"
         font.bold: true
@@ -59,7 +59,7 @@ Window {
         anchors.horizontalCenterOffset: 0
         anchors.horizontalCenter: parent.horizontalCenter
         keyName: "RITORNA ALLA PAGINA INIZIALE"
-        onPressedChanged: {
+        mouse.onClicked: {
             console.log("> Pressed ritorna")
             // parent.source = "qrc:/main.qml"
             Loader.source = ""
@@ -69,39 +69,35 @@ Window {
 
     BtnKeyboard {
         id: btnKeyboardApriTutti
-        x: 446
+        x: 571
         y: 140
         width: 309
         height: 78
         keyName: "Abilita tutti i cassetti"
-        onPressedChanged: ioBoard.setInternalTable(40)
+        mouse.onClicked: ioBoard.setInternalTable(40)
     }
 
     BtnKeyboard {
-        id: btnKeyboardVite
-        x: 446
+        id: btnKeyboardInputs
+        x: 571
         y: 224
         width: 309
         height: 78
-        keyName: "Apri motore a vite"
-        onPressedChanged: {
-            console.log("> ", mysettings)
-            for(var el in mysettings)
-                console.log(": "+el)
-            console.log("# "+mysettings.get("flag_esiste_pos"))
-            console.log("# "+mysettings.get("posType"))
-            console.log("# "+mysettings.get("posPort"))
+        keyName: "Lettura ingressi"
+        mouse.onClicked: {
+            var ret = ioBoard.leggiCassetto(2)
+            console.log("Lettura: "+ret )
         }
     }
 
     BtnKeyboard {
         id: btnKeyboardC22
         x: 41
-        y: 320
+        y: 313
         width: 212
-        height: 90
+        height: 78
         keyName: "Cassetto 22"
-        onPressedChanged: ioBoard.apriCassetto(33)
+        mouse.onClicked: ioBoard.apriCassetto(22)
     }
 
 
@@ -191,6 +187,43 @@ Window {
         }
     }
 
+    BtnKeyboard {
+        id: btnKeyboard3
+        x: 259
+        y: 140
+        width: 212
+        height: 78
+        keyName: "Cassetto 3"
+        mouse.onClicked: {
+            ioBoard.apriCassetto(3);
+        }
+    }
+
+    BtnKeyboard {
+        id: btnKeyboard4
+        x: 259
+        y: 224
+        width: 212
+        height: 78
+        keyName: "Cassetto 4"
+        mouse.onClicked: {
+            ioBoard.apriCassetto(4);
+        }
+    }
+
+    BtnKeyboard {
+        id: btnKeyboardInput1
+        x: 571
+        y: 313
+        width: 309
+        height: 78
+        keyName: "Lettura ingresso 1"
+        mouse.onClicked: {
+            var ret = ioBoard.leggiCassetto(1)
+            console.log("Lettura: "+ret )
+        }
+    }
+
 }
 
 
@@ -198,3 +231,8 @@ Window {
 
 
 
+/*##^##
+Designer {
+    D{i:0;autoSize:true;formeditorZoom:0.6600000262260437;height:750;width:1500}
+}
+##^##*/

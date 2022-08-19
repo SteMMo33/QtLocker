@@ -5,9 +5,9 @@
  * @brief Cassetti::Cassetti
  * Costruttore
  */
-Cassetti::Cassetti() // : _number(0)
+Cassetti::Cassetti()
 {
-    qDebug() << "Costruttore Cassetti";
+    qDebug() << "C'tor Cassetti";
 
     /*
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");

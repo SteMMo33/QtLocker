@@ -6,8 +6,8 @@ Item {
     height: 120
     property alias keyName: keyName.text
     property alias textColor: keyName.color
-    property alias pressed: mouseArea.pressed
-    property alias pressedButtons: mouseArea.pressedButtons
+    //property alias pressed: mouseArea.pressed
+    //property alias pressedButtons: mouseArea.pressedButtons
     property alias mouse: mouseArea
 
     Rectangle {
